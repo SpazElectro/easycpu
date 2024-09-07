@@ -231,7 +231,7 @@ class CPU:
             reg2 = self.fetch_register()
             if self.get_register(reg1) != self.get_register(reg2):
                 self.pc = 0x1000 + self.fetch_addr()
-        elif instruction == 0x11: # DRW
+        elif instruction == 0x11: # DRW R1, R2, R3
             self.draw_pixel(self.get_register(self.fetch_register()), self.get_register(self.fetch_register()), self.get_register(self.fetch_register()))
         elif instruction == 0x12: # CLR
             self.clear_display()
@@ -246,7 +246,7 @@ class CPU:
             R1 = self.fetch_register()
             reg2 = self.fetch_register()
             self.set_register(R1, int(self.get_register(R1) * self.get_register(reg2)))
-        elif instruction == 0x16: # RECT
+        elif instruction == 0x16: # RECT R1, R2, R3, R4, R5
             self.draw_rectangle(
                 self.get_register(self.fetch_register()),
                 self.get_register(self.fetch_register()),
@@ -256,7 +256,7 @@ class CPU:
             )
         elif instruction == 0x17: # RND
             self.set_register(self.fetch_register(), self.step_random())
-        elif instruction == 0x18: # SEED
+        elif instruction == 0x18: # SEED INT
             self.set_random(self.fetch_int())
         elif instruction == 0x19: # RNDMAP R1, IMM, IMM
             R1 = self.fetch_register()

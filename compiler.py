@@ -162,7 +162,7 @@ class Compiler:
                 self.bytecode.append(self.get_register_code(args[0]))
             elif instruction == "SEED":
                 self.bytecode.append(0x18)
-                self.bytecode.append(self.encode_int(self.parse_int(args[0])))
+                self.bytecode.extend(self.encode_int(self.parse_int(args[0])))
             elif instruction == "RNDMAP":
                 self.bytecode.append(0x19)
                 self.bytecode.append(self.get_register_code(args[0]))
