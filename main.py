@@ -1,4 +1,3 @@
-import random
 import pygame
 import numpy as np
 from emulator import CPU
@@ -8,10 +7,22 @@ DISPLAY_WIDTH = 256
 DISPLAY_HEIGHT = 256
 
 PALETTE = [
-    (0, 0, 0),
-    (255, 0, 0),
-    (0, 255, 0),
-    (0, 0, 255),
+    (0, 0, 0),       # 00: Black
+    (29, 43, 83),    # 01: Dark Blue
+    (126, 37, 83),   # 02: Purple
+    (0, 135, 81),    # 03: Green
+    (171, 82, 54),   # 04: Brown
+    (95, 87, 79),    # 05: Dark Gray
+    (194, 195, 199), # 06: Light Gray
+    (255, 241, 232), # 07: White
+    (255, 0, 77),    # 08: Red
+    (255, 163, 0),   # 09: Orange
+    (255, 236, 39),  # 10: Yellow
+    (0, 228, 54),    # 11: Light Green
+    (41, 173, 255),  # 12: Light Blue
+    (131, 118, 156), # 13: Light Purple
+    (255, 119, 168), # 14: Pink
+    (255, 204, 170)  # 15: Peach
 ]
 
 class Main:
@@ -39,7 +50,7 @@ class Main:
         indexed_data = np.array(self.cpu.display, dtype=np.uint8).reshape((DISPLAY_HEIGHT, DISPLAY_WIDTH))
         if np.any(indexed_data >= len(self.palette_array)):
             print("Color doesn't fit in the palette!")
-            # indexed_data[indexed_data >= len(self.palette_array)] = random.randint(1, 3)
+            indexed_data[indexed_data >= len(self.palette_array)] = 15
         rgb_array = self.palette_array[indexed_data]
 
         pygame.surfarray.blit_array(self.surface, rgb_array)

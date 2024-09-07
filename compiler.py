@@ -42,7 +42,7 @@ class Compiler:
 
     def compile(self, code):
         lines = code.strip().split("\n")
-        position = 0  # Initialize position at 0
+        position = 0
         
         for line in lines:
             line = line.strip()
@@ -144,12 +144,12 @@ class Compiler:
                 self.bytecode.append(0x13)
             elif instruction == "DIV":
                 self.bytecode.append(0x14)
-                self.bytecode.append(self.get_register_code(args[0])) # a
-                self.bytecode.append(self.get_register_code(args[1])) # b
+                self.bytecode.append(self.get_register_code(args[0]))
+                self.bytecode.append(self.get_register_code(args[1]))
             elif instruction == "MUL":
                 self.bytecode.append(0x15)
-                self.bytecode.append(self.get_register_code(args[0])) # a
-                self.bytecode.append(self.get_register_code(args[1])) # b
+                self.bytecode.append(self.get_register_code(args[0]))
+                self.bytecode.append(self.get_register_code(args[1]))
             elif instruction == "RECT":
                 self.bytecode.append(0x16)
                 self.bytecode.append(self.get_register_code(args[0])) # x
@@ -203,11 +203,10 @@ class Compiler:
     def parse_label(self, label):
         label = label.strip()
         if label in self.labels:
-            return self.labels[label]  # Return the bytecode position as an integer
+            return self.labels[label]
         else:
             raise ValueError(f"Unknown label: {label}")
 
-# Example usage
 assembly_code = open("test.s").read()
 
 compiler = Compiler()

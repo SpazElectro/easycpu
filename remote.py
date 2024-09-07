@@ -60,16 +60,13 @@ commands = {
 }
 
 def parse_args(func, args):
-    # Check function signature
     sig = inspect.signature(func)
     params = sig.parameters
     if len(params) != len(args):
         raise ValueError(f"Command expects {len(params)} arguments but got {len(args)}")
     
-    # Convert arguments to appropriate types
     parsed_args = []
     for param, arg in zip(params.values(), args):
-        # Check for hexadecimal values
         if arg.startswith('0x'):
             arg = int(arg, 16)
         else:
@@ -78,7 +75,6 @@ def parse_args(func, args):
             except ValueError:
                 pass
         
-        # Convert to type based on the function signature
         if param.annotation != inspect.Parameter.empty:
             parsed_args.append(param.annotation(arg))
         else:
