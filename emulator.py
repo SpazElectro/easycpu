@@ -3,6 +3,7 @@ import time
 import socket
 import threading
 import pickle
+from typing import List
 
 DISPLAY_WIDTH  = 256
 DISPLAY_HEIGHT = 256
@@ -25,8 +26,17 @@ def map_to_range(lcg_value: int, min_val: int, max_val: int, m=2**32):
     """Map LCG value to a specified range [min_val, max_val]."""
     return min_val + (lcg_value / (m - 1)) * (max_val - min_val)
 
+class IODevice:
+    def __init__(self, cpu: 'CPU'):
+        self.cpu = cpu
+    
+    def _in(self, addr: int) -> None:
+        raise NotImplementedError("This device does not support input.")
+    def _out(self, addr: int) -> None:
+        raise NotImplementedError("This device does not support output.")
+
 class CPU:
-    def __init__(self, rom_filename: str, ips_limit: float = float("inf")) -> None:
+    def __init__(self, rom_filename: str, devices: List[type[IODevice]], ips_limit: float = float("inf")) -> None:
         self.memory = bytearray(8192)
         self.display = bytearray(DISPLAY_WIDTH*DISPLAY_HEIGHT)
 
@@ -50,6 +60,9 @@ class CPU:
         self.rom_size = 0
         self.stop_requested = False
         self.ips_limit = ips_limit
+        self.devices = []
+        for d in self.devices:
+            self.devices.append(d(self))
 
         self.load_rom(rom_filename)
 
@@ -75,9 +88,19 @@ class CPU:
         index = x * DISPLAY_WIDTH + y
         self.display2[index] = min(color, 255)
     def draw_rectangle(self, x: int, y: int, width: int, height: int, color: int) -> None:
-        for _x in range(x, x+width):
-            for _y in range(y, y+height):
-                self.draw_pixel(_x, _y, color)
+        color = min(color, 255)
+        x_end = min(x + width, DISPLAY_WIDTH)
+        y_end = min(y + height, DISPLAY_HEIGHT)
+        
+        if x >= DISPLAY_WIDTH or y >= DISPLAY_HEIGHT or x_end <= 0 or y_end <= 0:
+            return
+        
+        row_data = [color] * (x_end - x)
+        
+        for _y in range(y, y_end):
+            start_index = _y * DISPLAY_WIDTH + x
+            end_index = start_index + (x_end - x)
+            self.display2[start_index:end_index] = row_data
     def clear_display(self):
         self.display2 = bytearray(DISPLAY_WIDTH*DISPLAY_HEIGHT)
 
@@ -231,6 +254,7 @@ class CPU:
             reg2 = self.fetch_register()
             if self.get_register(reg1) != self.get_register(reg2):
                 self.pc = 0x1000 + self.fetch_addr()
+        # TODO seperate display into an IO device
         elif instruction == 0x11: # DRW R1, R2, R3
             self.draw_pixel(self.get_register(self.fetch_register()), self.get_register(self.fetch_register()), self.get_register(self.fetch_register()))
         elif instruction == 0x12: # CLR
@@ -238,6 +262,8 @@ class CPU:
         elif instruction == 0x13: # RENDER
             self.display  = self.display2
             self.display2 = bytearray(DISPLAY_WIDTH*DISPLAY_HEIGHT)
+        
+        # TODO change the opcodes of these 2
         elif instruction == 0x14: # DIV R1, R2
             R1 = self.fetch_register()
             reg2 = self.fetch_register()
@@ -246,15 +272,13 @@ class CPU:
             R1 = self.fetch_register()
             reg2 = self.fetch_register()
             self.set_register(R1, int(self.get_register(R1) * self.get_register(reg2)))
+        
+        # TODO change the opcode of this
         elif instruction == 0x16: # RECT R1, R2, R3, R4, R5
-            self.draw_rectangle(
-                self.get_register(self.fetch_register()),
-                self.get_register(self.fetch_register()),
-                self.get_register(self.fetch_register()),
-                self.get_register(self.fetch_register()),
-                self.get_register(self.fetch_register())
-            )
-        elif instruction == 0x17: # RND
+            self.draw_rectangle(self.get_register(self.fetch_register()), self.get_register(self.fetch_register()), self.get_register(self.fetch_register()), self.get_register(self.fetch_register()), self.get_register(self.fetch_register()))
+        
+        # TODO seperate random into an IO device
+        elif instruction == 0x17: # RND R1
             self.set_register(self.fetch_register(), self.step_random())
         elif instruction == 0x18: # SEED INT
             self.set_random(self.fetch_int())
@@ -265,6 +289,8 @@ class CPU:
                 self.fetch_immediate(),
                 self.fetch_immediate()
             )))
+        # IN 0x1A
+        # OUT 0x1B
         elif instruction == 0xFF: # HLT
             self.halt("HLT by program")
         else:
@@ -367,7 +393,9 @@ class CPU:
         self.debug_server_thread.join()
 
 def main():
-    cpu = CPU("test.rom")#, ips_limit=1000)
+    from cpuio.test import TestDevice
+
+    cpu = CPU("test.rom", [TestDevice])#, ips_limit=1000)
 
     try:
         while not cpu.halted:

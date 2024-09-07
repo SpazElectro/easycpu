@@ -168,6 +168,16 @@ class Compiler:
                 self.bytecode.append(self.get_register_code(args[0]))
                 self.bytecode.extend(self.encode_immediate(self.parse_immediate(args[1])))
                 self.bytecode.extend(self.encode_immediate(self.parse_immediate(args[2])))
+            elif instruction == "IN":
+                self.bytecode.append(0x1A)
+                self.bytecode.append(self.encode_immediate(self.parse_immediate(args[0])))
+                self.bytecode.append(self.encode_address(self.parse_address(args[1])))
+            elif instruction == "OUT":
+                self.bytecode.append(0x1B)
+                self.bytecode.append(self.encode_immediate(self.parse_immediate(args[0])))
+                self.bytecode.append(self.encode_address(self.parse_address(args[1])))
+            # IN DEV, ADDR
+            # OUT DEV, ADDR
             elif instruction == "HLT":
                 self.bytecode.append(0xFF)
             else:

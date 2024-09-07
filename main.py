@@ -3,6 +3,8 @@ import numpy as np
 from emulator import CPU
 import threading
 
+from cpuio.test import TestDevice
+
 DISPLAY_WIDTH = 256
 DISPLAY_HEIGHT = 256
 
@@ -31,7 +33,7 @@ class Main:
         self.screen = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
         pygame.display.set_caption("Emulator")
 
-        self.cpu = CPU("test.rom")
+        self.cpu = CPU("test.rom", [TestDevice])
 
         self.clock = pygame.time.Clock()
         self.running = True

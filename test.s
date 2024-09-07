@@ -1,7 +1,7 @@
 MOV R0, 0x50 ; x
 MOV R1, 0x50 ; y
-MOV R2, 0x50 ; w
-MOV R3, 0x50 ; h
+MOV R2, 30 ; w
+MOV R3, 30 ; h
 MOV R4, 0x1  ; color
 
 SEED 1
